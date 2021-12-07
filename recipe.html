@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.iconify.design/2/2.1.0/iconify.min.js"></script>
+    <link rel="stylesheet" href="CSS/nav.css" />
+    <link rel="stylesheet" href="CSS/recipeCont.css" />
+    <title>Document</title>
+    <style>
+      #iframe {
+        position: relative;
+        right: 0;
+        /* vertical-align: top; */
+      }
+      #main_2 {
+        display: grid;
+        grid-template-columns: 60% 35%;
+        justify-content: space-between;
+      }
+      #main_1 {
+            display: grid;      
+            grid-template-columns: 30% 40% 30%;
+            /* gap: 30px; */
+        } 
+        #main_1 img {
+            width: 100%;
+            height: 330px;
+        }
+
+        #table {
+            width: 75%;
+            border-collapse: collapse;     
+            border: 1px solid rgb(170, 166, 166);      
+        }
+        #table tr td,th {
+            padding: 5px 10px;            
+        }
+
+        #table th:nth-child(1){
+            width: 10%;
+        }
+        #table th:nth-child(2){
+            width: 55%;
+        }
+        #table th:nth-child(3){
+            width: 35%;
+        }
+        #table tr:nth-child(even) {
+       background-color: rgb(250, 234, 214);
+       }
+
+        
+    </style>
+  </head>
+  <body>
+    <div id="nav"></div>
+    <div id="recipeCont"></div>
+  </body>
+</html>
+<script type="module">
+  import navbar from "./JS/nav.js";
+  import getData from "./JS/getData.js";
+
+  let navbar_container = document.getElementById("nav");
+  navbar_container.innerHTML = navbar();
+
+  makeapicall();
+
+  async function makeapicall(e) {
+    let recipeDetails = await getData();
+
+    recipeDetails = recipeDetails.meals[0];
+
+    let recipeCont = document.getElementById("recipeCont");
+
+    // console.log(recipeDetails);
+
+    let amount = (Math.random() * (2000 + 500 + 1) + 500).toFixed(2);
+
+    let url = recipeDetails.strYoutube;
+
+    url = url.replace("watch?v=", "embed/");
+
+    let style = ` <div id="main_1">
+            <div id="imagediv">
+                <img src="${recipeDetails.strMealThumb}" alt="">
+            </div>
+            <div id="titleDiv">
+                <h3 id="title">${recipeDetails.strMeal}</h3>
+                <h5 id="title2">
+                    ${recipeDetails.strCategory} &nbsp; | &nbsp; ${recipeDetails.strArea}
+                </h5>
+                
+                <p id="amount">${amount}</p>  
+                <button id="add_to_cart" >Add To Cart</button>                
+              
+            </div>
+            <div id="ingredientDiv">
+        <table id="table" border=2px>
+            <tr>
+                <th>S.No</th>
+                <th>Ingredient</th>
+                <th>Measures</th>
+            </tr>
+        </table>
+    </div>          
+    </div>
+        <hr width="95%">
+        <div id="main_2">            
+                <p id="para"><b>Recipe Instructions : </b> ${recipeDetails.strInstructions} </p>  
+                <div id="iframe">
+                <iframe width="410px" height="250px" src="${url}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>                      
+        </div> `;
+    recipeCont.innerHTML = style;
+
+
+    //   Ingredient Table
+
+var key = "strMeasure";
+var key1 = "strIngredient";
+var table = document.getElementById("table");
+console.log(recipeDetails.strIngredient1);
+
+for(var i=1;i<=20;i++){
+    key += i;
+    key1 += i;
+    console.log(key,key1);
+    if(recipeDetails[key1] != "" && recipeDetails[key1] != " " ){
+        // console.log(recipeDetails[key]);
+        // var temp = "strIngredient"+i;
+        // console.log(recipeDetails[temp]);
+
+        var tr = document.createElement("tr");
+        var td1 = document.createElement("td")
+        td1.textContent = i;
+        var td2 = document.createElement("td")
+        td2.textContent = recipeDetails[key1];
+
+        var td3 = document.createElement("td")
+        td3.textContent = recipeDetails[key];
+
+        tr.append(td1,td2,td3);
+
+        table.append(tr);       
+    } else  {
+        // console.log(recipeDetails[key],"taz")
+        break;
+    } 
+    if(i>9){
+        key = key.substring(0,key.length-2);
+        key1 = key1.substring(0,key1.length-2);
+    } else {
+        key = key.substring(0,key.length-1);
+        key1 = key1.substring(0,key1.length-1);
+    }
+}    
+}
+var cart = JSON.parse(localStorage.getItem("CartMenu")) || [];
+// var cart = JSON.parse(localStorage.getItem("CartMenu")) || [];
+
+// addToCart();
+
+var cartBtn = document.getElementById("add_to_cart");
+
+cartBtn.addEventListener("click",addToCart);
+
+function addToCart(e)
+{
+    console.log(e.target.parentNode);
+    var title = e.target.parentNode.querySelector("h2").textContent;
+    var ctrg = e.target.parentNode.querySelector("#ctrg").textContent;
+    var area = e.target.parentNode.querySelector("#area").textContent;
+    var desciption = e.target.parentNode.querySelector("p").textContent;
+    var price = e.target.parentNode.querySelector("#price").textContent;
+    var img = e.target.parentNode.parentNode.querySelector("img").src;
+ //    console.log(title, ctrg, area, desciption, price);
+
+ var obj = 
+ {
+     title : title,
+     category : ctrg,
+     area : area,
+     description : desciption,
+     price : price,
+     imgURL : img
+ }
+ var flag = false;
+
+ for(var i=0; i<cart.length; i++)
+ {
+     if(cart[i].title == title && cart[i].category == ctrg && cart[i].area == cart[i].area && cart[i].price == price)
+     {
+         flag = true;
+         break;
+     }
+ }
+ if(flag)
+    alert("This item is already in the cart");
+    else
+    {
+        cart.push(obj);
+        localStorage.setItem("CartMenu", JSON.stringify(cart));
+        var cartCount = document.getElementById("cartCount");
+        cartCount.textContent = cart.length; 
+        alert("Item pushed to cart succesfully");  
+    }
+}
+
+var cartCount = document.getElementById("cartCount");
+cartCount.textContent = cart.length; 
+</script>
